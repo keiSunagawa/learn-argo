@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: term-test-
+spec:
+  entrypoint: term-test
+  # Always run cleanup
+  onExit: cleanup
+
+  templates:
+  - name: term-test
+    steps:
+    - - name: sleep
+        template: sleep
+
+  - name: sleep
+    container:
+      image: alpine:3.9
+      command: ["/bin/sh", "-c"]
+      args: ["sleep 600"]
+
+  - name: cleanup
+    container:
+      image: alpine:3.9
+      command: ["/bin/sh", "-c"]
+      args: ["sleep 60; echo bye > /tmp/bye"]
+    outputs:
+      artifacts:
+      - name: bye
+        path: /tmp/bye
