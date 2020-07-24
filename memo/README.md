@@ -13,7 +13,9 @@
 
 ## Integrations  
 ### metric  
+
 ### datadog  
+- datadog側にintegrationあり、eventもcollectできそう
 
 ## CustomResource  
 - apiはどこだろう?  
@@ -21,7 +23,8 @@
   - https://github.com/argoproj/argo/blob/master/pkg/apis/workflow/v1alpha1/workflow_types.go#L167  
 - docsにありました
   - https://argoproj.github.io/argo/fields/
-
+- default値
+  - https://argoproj.github.io/argo/default-workflow-specs/
 ## stop/terminateは何をしているか調査  
 - ~docker-for-macだとterminate機能しない可能性あり?~
   - stop http://localhost:2746/api/v1/workflows/argo/workflow-template-submittable-mt6hx/stop
@@ -42,3 +45,10 @@
 
 ## notice
 ### exit notice
+- k8s eventとしては上がっているのでそちらを集計 or onExitHookを利用する
+
+## SSO
+- https://argoproj.github.io/argo/argo-server-sso/
+- configもろもろ設定、実環境ないと試しづらいのでAzureADで試したい
+
+## TODO my argo manifests

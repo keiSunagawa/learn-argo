@@ -1,0 +1,149 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo-server
+  labels:
+{{ include "my_argo.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: argo-server
+  template:
+    metadata:
+      labels:
+        app: argo-server
+    spec:
+      containers:
+      - args:
+        - server
+        - --namespaced
+        - --auth-mode
+        - server
+        - --auth-mode
+        - client
+        image: argoproj/argocli:v2.9.3
+        name: argo-server
+        ports:
+        - containerPort: 2746
+          name: web
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 2746
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 20
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: argo-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workflow-controller
+  labels:
+{{ include "my_argo.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: workflow-controller
+  template:
+    metadata:
+      labels:
+        app: workflow-controller
+    spec:
+      containers:
+      - args:
+        - --configmap
+        - workflow-controller-configmap
+        - --executor-image
+        - argoproj/argoexec:v2.9.3
+        - --namespaced
+        command:
+        - workflow-controller
+        image: argoproj/workflow-controller:v2.9.3
+        name: workflow-controller
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: argo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: postgres
+    {{- include "my_argo.labels" . | nindent 4 }}
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+      name: postgres
+    spec:
+      containers:
+      - env:
+        - name: POSTGRES_PASSWORD
+          value: password
+        image: postgres:12-alpine
+        name: main
+        ports:
+        - containerPort: 5432
+        readinessProbe:
+          exec:
+            command:
+            - psql
+            - -U
+            - postgres
+            - -c
+            - SELECT 1
+          initialDelaySeconds: 15
+          timeoutSeconds: 2
+      nodeSelector:
+        kubernetes.io/os: linux
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: minio
+    {{- include "my_argo.labels" . | nindent 4 }}
+  name: minio
+spec:
+  containers:
+  - command:
+    - minio
+    - server
+    - /data
+    env:
+    - name: MINIO_ACCESS_KEY
+      value: admin
+    - name: MINIO_SECRET_KEY
+      value: password
+    image: minio/minio:RELEASE.2019-12-17T23-16-33Z
+    lifecycle:
+      postStart:
+        exec:
+          command:
+          - mkdir
+          - -p
+          - /data/my-bucket
+    livenessProbe:
+      httpGet:
+        path: /minio/health/live
+        port: 9000
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    name: main
+    ports:
+    - containerPort: 9000
+    readinessProbe:
+      httpGet:
+        path: /minio/health/ready
+        port: 9000
+      initialDelaySeconds: 5
+      periodSeconds: 10
