@@ -13,10 +13,15 @@
 
 ## Integrations  
 ### metric  
-
+- workflow-controller/9090から取得できるのはcontrollerそのもののメトリクス
+  - workflow実行時間などは取れない?
+- customMetricで取得できそう
+  - templateごとに定義
+    - https://argoproj.github.io/argo/fields/#gauge
+    - 取得できる値はvariables を参照 https://argoproj.github.io/argo/variables/
 ### datadog  
 - datadog側にintegrationあり、eventもcollectできそう
-
+- metric系はprometheus metric経由で取得
 ## CustomResource  
 - apiはどこだろう?  
   - このへんを参照できそう？  
@@ -51,4 +56,7 @@
 - https://argoproj.github.io/argo/argo-server-sso/
 - configもろもろ設定、実環境ないと試しづらいのでAzureADで試したい
 
-## TODO my argo manifests
+## TODO 
+- workflow metric
+- datadog k8s integrations
+- SSO
