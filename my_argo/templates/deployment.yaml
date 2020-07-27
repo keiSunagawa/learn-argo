@@ -18,6 +18,8 @@ spec:
       - args:
         - server
         - --namespaced
+        # - --auth-mode
+        # - sso
         - --auth-mode
         - server
         - --auth-mode
